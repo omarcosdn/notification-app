@@ -1,0 +1,39 @@
+services:
+  database:
+    image: postgres:17.0-alpine
+    container_name: 'postgres'
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=notification_app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    command:
+      - 'postgres'
+      - '-c'
+      - 'effective_cache_size=256MB'
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
+    volumes:
+      - ./.docker/postgresql:/var/lib/postgresql
+
+  messaging:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 15672:15672
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=dev
+      - RABBITMQ_DEFAULT_PASS=dev
+      - RABBITMQ_DEFAULT_VHOST=/
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
