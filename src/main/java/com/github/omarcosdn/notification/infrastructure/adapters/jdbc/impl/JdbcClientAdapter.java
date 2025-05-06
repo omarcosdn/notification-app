@@ -2,6 +2,8 @@ package com.github.omarcosdn.notification.infrastructure.adapters.jdbc.impl;
 
 import com.github.omarcosdn.notification.infrastructure.adapters.jdbc.DatabaseClient;
 import com.github.omarcosdn.notification.infrastructure.adapters.jdbc.RowMap;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,5 +25,10 @@ public class JdbcClientAdapter implements DatabaseClient {
   @Override
   public <T> Optional<T> queryOne(String sql, Map<String, Object> params, RowMap<T> mapper) {
     return this.target.sql(sql).params(params).query(new RowMapAdapter<>(mapper)).optional();
+  }
+
+  @Override
+  public <T> List<T> queryAll(String sql, Map<String, Object> params, RowMap<T> mapper) {
+    return this.target.sql(sql).params(params).query(new RowMapAdapter<>(mapper)).list();
   }
 }

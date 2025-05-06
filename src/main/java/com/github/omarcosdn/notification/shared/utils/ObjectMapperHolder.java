@@ -1,7 +1,9 @@
 package com.github.omarcosdn.notification.shared.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.concurrent.Callable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,6 +22,14 @@ public final class ObjectMapperHolder {
 
   public static <T> T readValue(final String json, final Class<T> clazz) {
     return invoke(() -> MAPPER.readValue(json, clazz));
+  }
+
+  public static JsonNode readTree(final String json) {
+    return invoke(() -> MAPPER.readTree(json));
+  }
+
+  public static ObjectNode createObjectNode() {
+    return invoke(MAPPER::createObjectNode);
   }
 
   private static <T> T invoke(final Callable<T> callable) {
