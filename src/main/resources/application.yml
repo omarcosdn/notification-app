@@ -3,6 +3,9 @@ server:
   servlet:
     context-path: /api/notification-services
 
+scheduler:
+  pool-size: 1
+
 spring:
   application:
     name: NotificationServices
@@ -22,3 +25,8 @@ spring:
         concurrency: 3
         max-concurrency: 10
         acknowledge-mode: auto
+  data:
+    redis:
+      host: localhost
+      timeout: 5000
+      port: 6379

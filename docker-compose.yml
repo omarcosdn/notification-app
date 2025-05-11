@@ -1,4 +1,17 @@
 services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./.docker/postgresql:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: "256MB"
   database:
     image: postgres:17.0-alpine
     container_name: 'postgres'
@@ -16,8 +29,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: "512MB"
+          cpus: "0.4"
+          memory: "256MB"
     volumes:
       - ./.docker/postgresql:/var/lib/postgresql
 
@@ -35,5 +48,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: "512MB"
+          cpus: "0.4"
+          memory: "256MB"

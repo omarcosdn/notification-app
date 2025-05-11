@@ -1,0 +1,17 @@
+{
+  "name": "notification-services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ws-client.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omarcosdn/notification-services.git"
+  },
+  "private": true,
+  "dependencies": {
+    "ws": "^8.18.2"
+  }
+}
