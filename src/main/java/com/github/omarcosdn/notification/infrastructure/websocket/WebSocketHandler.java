@@ -18,6 +18,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @Component
 public class WebSocketHandler extends TextWebSocketHandler {
 
+  private static final String TENANT_HEADER = "Tenant-Id";
+  private static final String ERROR_TYPE = "error";
+  private static final String ACK_TYPE = "ack";
+
   private final MessageRepository messageRepository;
   private final WebSocketSessionManager sessionManager;
 
@@ -35,7 +39,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
   public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
     var tenantId = getTenantFromSession(session);
     if (tenantId != null) {
-      sessionManager.unregister(tenantId);
+      sessionManager.unregister(tenantId, session.getId());
     }
   }
 
@@ -52,22 +56,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
       throws Exception {
     var tenantId = getTenantFromSession(session);
     if (Objects.isNull(tenantId)) {
-      var error = ObjectMapperHolder.createObjectNode();
-      error.put("type", "error");
-      error.put("message", "Invalid tenant header");
-
-      session.sendMessage(new TextMessage(error.toString()));
-      session.close(CloseStatus.POLICY_VIOLATION);
-
-      log.error("Invalid tenant header");
-
+      handleInvalidTenant(session);
       return;
     }
 
     var json = ObjectMapperHolder.readTree(message.getPayload());
     var type = json.get("type").asText();
 
-    if (type.equals("ack")) {
+    if (ACK_TYPE.equals(type)) {
       handleAck(UUID.fromString(json.get("messageId").asText()));
       return;
     }
@@ -82,30 +78,33 @@ public class WebSocketHandler extends TextWebSocketHandler {
   private void handleTenant(final WebSocketSession session) throws IOException {
     var tenantId = getTenantFromSession(session);
     if (Objects.isNull(tenantId)) {
-      var error = ObjectMapperHolder.createObjectNode();
-      error.put("type", "error");
-      error.put("message", "Invalid tenant header");
-
-      session.sendMessage(new TextMessage(error.toString()));
-      session.close(CloseStatus.POLICY_VIOLATION);
-
-      log.error("Invalid tenant header");
-
+      handleInvalidTenant(session);
       return;
     }
 
     var sessionRegistered = sessionManager.register(tenantId, session);
     if (Boolean.FALSE.equals(sessionRegistered)) {
-      var error = ObjectMapperHolder.createObjectNode();
-      error.put("type", "error");
-      error.put("message", "Connection already exists for tenant " + tenantId);
-
-      session.sendMessage(new TextMessage(error.toString()));
-      session.close(CloseStatus.POLICY_VIOLATION);
-
+      handleExistingConnection(session, tenantId);
       return;
     }
 
+    sendUnAckedMessages(tenantId);
+  }
+
+  private void handleInvalidTenant(final WebSocketSession session) throws IOException {
+    var error = createErrorResponse("Invalid tenant header");
+    session.sendMessage(new TextMessage(error));
+    session.close(CloseStatus.POLICY_VIOLATION);
+    log.error("Invalid tenant header");
+  }
+
+  private void handleExistingConnection(final WebSocketSession session, final UUID tenantId) throws IOException {
+    var error = createErrorResponse("Connection already exists for tenant " + tenantId);
+    session.sendMessage(new TextMessage(error));
+    session.close(CloseStatus.POLICY_VIOLATION);
+  }
+
+  private void sendUnAckedMessages(final UUID tenantId) {
     var unAckedMessages = messageRepository.findUnAckedByTenantId(tenantId);
     for (var message : unAckedMessages) {
       sessionManager.sendMessage(message.getTenantId(), message.identity(), message.getContent());
@@ -113,12 +112,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
   }
 
   private UUID getTenantFromSession(final WebSocketSession session) {
-    var header = session.getHandshakeHeaders().getFirst("X-tenant-id");
+    var header = session.getHandshakeHeaders().getFirst(TENANT_HEADER);
     try {
       return header != null ? UUID.fromString(header) : null;
     } catch (IllegalArgumentException e) {
       log.error("Invalid UUID in tenant header: {}", header);
       return null;
     }
+  }
+
+  private String createErrorResponse(final String message) {
+    var error = ObjectMapperHolder.createObjectNode();
+    error.put("type", ERROR_TYPE);
+    error.put("message", message);
+    return error.toString();
   }
 }
