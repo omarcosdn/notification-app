@@ -280,10 +280,3 @@ Para testar o serviço, você pode:
 1. Usar o cliente WebSocket de exemplo em `.test/ws-client.js`
 2. Enviar mensagens via RabbitMQ Management Console (http://localhost:15672)
 3. Monitorar logs da aplicação para debug
-
-## 📝 Notas de Implementação
-
-- O serviço utiliza Spring WebSocket para gerenciamento de conexões
-- Redis é usado para controle de sessões com TTL de 120 segundos
-- Mensagens não entregues são persistidas no PostgreSQL
-- O sistema suporta reconexão automática e entrega de mensagens pendentes 
