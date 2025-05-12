@@ -166,12 +166,112 @@ Resposta:
   - Exchange: `com.github.omarcosdn.exchange.notification.pubsub`
   - Queue: `com.github.omarcosdn.queue.notification.v1`
 
+### Exemplo de Payloads RabbitMQ
+
+#### Envio de Notificação
+```json
+{
+   "tenantId": "8ebacf36-ca70-4b57-95cb-188d370fa873",
+   "content": "{\"title\":\"New Message\",\"body\":\"You have received a new message\",\"priority\":\"HIGH\",\"metadata\":{\"source\":\"SYSTEM\",\"category\":\"ALERT\"}}"
+}
+```
+
+### Estrutura do Payload
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| tenantId | UUID | Identificador único do tenant |
+| content | Object | Conteúdo da mensagem |
+| content.title | String | Título da mensagem |
+| content.body | String | Corpo da mensagem |
+| content.priority | String | Prioridade (HIGH, NORMAL, LOW) |
+| content.metadata | Object | Metadados adicionais |
+
 ## 🔒 Segurança
 
-- Validação de tenant via UUID
-- Uma única conexão por tenant
-- Timeout automático de conexões inativas
-- Persistência segura de mensagens
+### Autenticação Keycloak
+- Autenticação via Keycloak usando client credentials flow
+- Token JWT obrigatório para todas as APIs
+- Token deve ser enviado no header `Authorization: Bearer <token>`
+- Validação automática de token expirado
+- Suporte a refresh token
+
+### Headers Obrigatórios
+- `Authorization`: Bearer token JWT
+- `Tenant-Id`: UUID do tenant (cliente)
+
+### Obtenção do Token JWT
+```bash
+curl --location 'http://localhost:8080/realms/notification-app/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials' \
+--data-urlencode 'client_id=websocket-client' \
+--data-urlencode 'client_secret=KAdfQnSFRyCWqqiKmkDKUvQ2RiaJqXlO'
+```
+
+Resposta:
+```json
+{
+    "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ...",
+    "expires_in": 300,
+    "refresh_expires_in": 1800,
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ...",
+    "token_type": "bearer",
+    "not-before-policy": 0,
+    "session_state": "c2b4c3a1-2d3e-4f5g-6h7i-8j9k0l1m2n3o",
+    "scope": "profile email"
+}
+```
+
+### Exemplo de Cliente WebSocket (Node.js)
+```javascript
+const WebSocket = require('ws');
+
+const tenantId = '8ebacf36-ca70-4b57-95cb-188d370fa873';
+const jwtToken = 'seu-jwt-token-aqui';
+
+const ws = new WebSocket('ws://localhost:8080/api/notification-services/messages', {
+    headers: {
+        'Tenant-Id': tenantId,
+        'Authorization': `Bearer ${jwtToken}`
+    }
+});
+
+ws.on('open', () => {
+    console.log('✅ Connected to WebSocket server');
+});
+
+ws.on('message', (data) => {
+    const message = data.toString();
+    console.log('📩 Received text message:', message);
+});
+
+ws.on('close', () => {
+    console.log('🔌 Connection closed');
+});
+
+ws.on('error', (err) => {
+    console.error('❌ Error:', err);
+});
+```
+
+### Refresh Token
+```bash
+curl --location 'http://localhost:8080/realms/notification-app/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=refresh_token' \
+--data-urlencode 'refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ...' \
+--data-urlencode 'client_id=websocket-client' \
+--data-urlencode 'client_secret=KAdfQnSFRyCWqqiKmkDKUvQ2RiaJqXlO'
+```
+
+### Configuração do Keycloak
+- Realm: `notification-app`
+- Client ID: `websocket-client`
+- Client Secret: Configurado no Keycloak
+- Grant Types: `client_credentials`
+- Access Token Lifespan: 5 minutos
+- Refresh Token Lifespan: 30 minutos
 
 ## 🐛 Depuração
 
