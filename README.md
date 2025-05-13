@@ -70,16 +70,19 @@ ws://localhost:8080/api/notification-services/messages
 
 ### Headers Necessários
 - `Tenant-Id`: UUID do tenant (cliente)
+- `Authorization`: Bearer token JWT
 
 ### Exemplo de Cliente WebSocket (Node.js)
 ```javascript
 const WebSocket = require('ws');
 
 const tenantId = '8ebacf36-ca70-4b57-95cb-188d370fa873';
+const jwtToken = 'seu-jwt-token-aqui';
 
 const ws = new WebSocket('ws://localhost:8080/api/notification-services/messages', {
     headers: {
-        'Tenant-Id': tenantId
+        'Tenant-Id': tenantId,
+        'Authorization': `Bearer ${jwtToken}`
     }
 });
 
@@ -221,38 +224,6 @@ Resposta:
     "session_state": "c2b4c3a1-2d3e-4f5g-6h7i-8j9k0l1m2n3o",
     "scope": "profile email"
 }
-```
-
-### Exemplo de Cliente WebSocket (Node.js)
-```javascript
-const WebSocket = require('ws');
-
-const tenantId = '8ebacf36-ca70-4b57-95cb-188d370fa873';
-const jwtToken = 'seu-jwt-token-aqui';
-
-const ws = new WebSocket('ws://localhost:8080/api/notification-services/messages', {
-    headers: {
-        'Tenant-Id': tenantId,
-        'Authorization': `Bearer ${jwtToken}`
-    }
-});
-
-ws.on('open', () => {
-    console.log('✅ Connected to WebSocket server');
-});
-
-ws.on('message', (data) => {
-    const message = data.toString();
-    console.log('📩 Received text message:', message);
-});
-
-ws.on('close', () => {
-    console.log('🔌 Connection closed');
-});
-
-ws.on('error', (err) => {
-    console.error('❌ Error:', err);
-});
 ```
 
 ### Refresh Token
