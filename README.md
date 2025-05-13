@@ -31,8 +31,8 @@ Este é um serviço de notificações em tempo real que utiliza WebSocket para e
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/omarcosdn/notification-services.git
-cd notification-services
+git clone https://github.com/omarcosdn/notification-app.git
+cd notification-app
 ```
 
 2. Inicie os serviços de infraestrutura:
@@ -65,7 +65,7 @@ NOTIFICATION_APP_DATABASE_PASSWORD=postgres
 
 ### Endpoint
 ```
-ws://localhost:8080/api/notification-services/messages
+ws://localhost:8080/api/notification-socket/messages
 ```
 
 ### Headers Necessários
@@ -79,7 +79,7 @@ const WebSocket = require('ws');
 const tenantId = '8ebacf36-ca70-4b57-95cb-188d370fa873';
 const jwtToken = 'seu-jwt-token-aqui';
 
-const ws = new WebSocket('ws://localhost:8080/api/notification-services/messages', {
+const ws = new WebSocket('ws://localhost:8082/api/notification-socket/messages', {
     headers: {
         'Tenant-Id': tenantId,
         'Authorization': `Bearer ${jwtToken}`

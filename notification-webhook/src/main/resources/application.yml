@@ -6,3 +6,15 @@ server:
 spring:
   application:
     name: notification-webhook
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/notification-app
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: dev
+    password: dev
+    virtual-host: /
+    connection-timeout: 5000

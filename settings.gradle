@@ -1,3 +1,3 @@
-rootProject.name = 'notification-services'
+rootProject.name = 'notification-app'
 include 'notification-socket'
 include 'notification-webhook'

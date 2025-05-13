@@ -15,6 +15,19 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true
+    },
+    {
+      "clientId": "webhook-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "brlRZCnScqk6o4Z5Vl81qGEmvek4rK8f",
+      "redirectUris": [
+        "*"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true
     }
   ],
   "users": [
