@@ -46,13 +46,13 @@ public class WebSocketSessionManager {
 
     try {
       if (repository.hasTenant(tenantId)) {
-        log.info("Tenant {} already has an active session", tenantId);
+        log.error("Tenant {} already has an active session", tenantId);
         return false;
       }
 
       var existing = sessionMap.putIfAbsent(tenantId, session);
       if (existing != null) {
-        log.info("Session already exists in memory for tenant {}", tenantId);
+        log.error("Session already exists in memory for tenant {}", tenantId);
         return false;
       }
 
@@ -104,7 +104,7 @@ public class WebSocketSessionManager {
     }
 
     try {
-      log.info("PONG received from tenant {}", tenantId);
+      log.debug("PONG received from tenant {}", tenantId);
       repository.refresh(tenantId);
       pongMap.put(tenantId, Instant.now());
     } catch (Exception e) {
@@ -179,7 +179,7 @@ public class WebSocketSessionManager {
     try {
       var pingPayload = ByteBuffer.wrap(("ping:" + Instant.now()).getBytes());
       session.sendMessage(new PingMessage(pingPayload));
-      log.info("PING message was sent for tenant {}", tenantId);
+      log.debug("PING message was sent for tenant {}", tenantId);
     } catch (IOException e) {
       log.error("Error sending PING message to WebSocket for tenant {}", tenantId, e);
     }
