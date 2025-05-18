@@ -9,11 +9,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmqpConfig {
 
-  public static final String NOTIFICATION_EXCHANGE = "com.github.omarcosdn.exchange.notification.v1.pubsub";
+  public static final String NOTIFICATION_V1_EXCHANGE = "notification.v1.exchange";
+
   public static final String EMPTY_RK = "";
 
   @Bean
-  public FanoutExchange notificationExchange() {
-    return new FanoutExchange(NOTIFICATION_EXCHANGE);
+  public FanoutExchange notificationExchangeV1() {
+    return new FanoutExchange(NOTIFICATION_V1_EXCHANGE);
   }
 }

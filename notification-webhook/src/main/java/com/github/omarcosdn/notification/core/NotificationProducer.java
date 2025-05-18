@@ -1,5 +1,7 @@
 package com.github.omarcosdn.notification.core;
 
+import static com.github.omarcosdn.notification.infrastructure.config.AmqpConfig.NOTIFICATION_V1_EXCHANGE;
+
 import com.github.omarcosdn.notification.core.notification.v1.NotificationMessage;
 import com.github.omarcosdn.notification.infrastructure.config.AmqpConfig;
 import com.github.omarcosdn.notification.shared.utils.ObjectMapperHolder;
@@ -18,6 +20,6 @@ public class NotificationProducer {
 
   public void sendNotification(final NotificationMessage notificationMessage) {
     var payload = ObjectMapperHolder.writeValueAsString(notificationMessage);
-    rabbitTemplate.convertAndSend(AmqpConfig.NOTIFICATION_EXCHANGE, AmqpConfig.EMPTY_RK, payload);
+    rabbitTemplate.convertAndSend(NOTIFICATION_V1_EXCHANGE, AmqpConfig.EMPTY_RK, payload);
   }
 }
