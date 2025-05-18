@@ -4,10 +4,14 @@ import com.github.omarcosdn.notification.core.services.MessageDispatcher;
 import com.github.omarcosdn.notification.infrastructure.config.AmqpConfig;
 import com.github.omarcosdn.notification.shared.exceptions.UnsupportedMessageVersionException;
 import com.github.omarcosdn.notification.shared.utils.ObjectMapperHolder;
+import com.rabbitmq.client.Channel;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -23,7 +27,7 @@ public class NotificationConsumerAdapter {
   }
 
   @RabbitListener(queues = AmqpConfig.NOTIFICATION_V1_QUEUE)
-  public void onMessage(final String message) {
+  public void onMessage(final String message, final Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
     try {
       var notificationMessage = ObjectMapperHolder.readValue(message, NotificationMessage.class);
       validateMessageVersion(notificationMessage.getVersion());
@@ -31,7 +35,9 @@ public class NotificationConsumerAdapter {
       dispatcher.dispatch(notificationMessage.getTenantId(),
                           notificationMessage.getIdempotencyKey(),
                           notificationMessage.getContent());
+      channel.basicAck(tag, false);
     } catch (Exception e) {
+      channel.basicReject(tag, false);
       log.error("An error occurred while processing message.", e);
       throw e;
     }
