@@ -46,7 +46,7 @@ public class WebSocketSessionManager {
 
     try {
       if (repository.hasTenant(tenantId)) {
-        log.error("Tenant {} already has an active session", tenantId);
+        log.warn("Tenant {} already has an active session", tenantId);
         return false;
       }
 
@@ -120,7 +120,8 @@ public class WebSocketSessionManager {
         .ifPresent(
             session -> {
               try {
-                var json = buildMessage(tenantId, messageId, content);
+                var message = WebSocketMessage.build(tenantId, messageId, content);
+                var json = ObjectMapperHolder.writeValueAsString(message);
                 session.sendMessage(new TextMessage(json));
               } catch (IOException e) {
                 log.error("Error sending message to WebSocket for tenant {}", tenantId, e);
@@ -157,7 +158,7 @@ public class WebSocketSessionManager {
     sendPingMessage(tenantId, session);
   }
 
-  private boolean isSessionTimedOut(final UUID tenantId, final  Instant now) {
+  private boolean isSessionTimedOut(final UUID tenantId, final Instant now) {
     var lastPong = pongMap.getOrDefault(tenantId, Instant.MIN);
     return now.minusMillis(PONG_TIMEOUT_MS).isAfter(lastPong);
   }
@@ -183,14 +184,5 @@ public class WebSocketSessionManager {
     } catch (IOException e) {
       log.error("Error sending PING message to WebSocket for tenant {}", tenantId, e);
     }
-  }
-
-  private String buildMessage(final UUID tenantId, final UUID messageId, final String content) {
-    var json = ObjectMapperHolder.createObjectNode();
-    json.put("type", "message");
-    json.put("tenantId", tenantId.toString());
-    json.put("messageId", messageId.toString());
-    json.put("content", content);
-    return json.toString();
   }
 }

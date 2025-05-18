@@ -1,7 +1,7 @@
 package com.github.omarcosdn.notification.infrastructure.messaging.consumers;
 
 import com.github.omarcosdn.notification.core.services.MessageDispatcher;
-import com.github.omarcosdn.notification.infrastructure.config.RabbitConfig;
+import com.github.omarcosdn.notification.infrastructure.config.AmqpConfig;
 import com.github.omarcosdn.notification.shared.exceptions.UnsupportedMessageVersionException;
 import com.github.omarcosdn.notification.shared.utils.ObjectMapperHolder;
 import java.util.Objects;
@@ -22,7 +22,7 @@ public class NotificationConsumerAdapter {
     this.dispatcher = Objects.requireNonNull(dispatcher);
   }
 
-  @RabbitListener(queues = RabbitConfig.NOTIFICATION_V1_QUEUE)
+  @RabbitListener(queues = AmqpConfig.NOTIFICATION_V1_QUEUE)
   public void onMessage(final String message) {
     try {
       var notificationMessage = ObjectMapperHolder.readValue(message, NotificationMessage.class);
@@ -37,7 +37,7 @@ public class NotificationConsumerAdapter {
     }
   }
 
-  private void validateMessageVersion(String version) {
+  private void validateMessageVersion(final String version) {
     if (version == null || !SUPPORTED_VERSIONS.contains(version.toLowerCase())) {
       throw new UnsupportedMessageVersionException(version);
     }

@@ -10,11 +10,10 @@ import org.springframework.context.annotation.Configuration;
 
 @EnableRabbit
 @Configuration
-public class RabbitConfig {
+public class AmqpConfig {
 
-  public static final String NOTIFICATION_EXCHANGE =
-      "com.github.omarcosdn.exchange.notification.pubsub";
-  public static final String NOTIFICATION_V1_QUEUE = "com.github.omarcosdn.queue.notification.v1";
+  public static final String NOTIFICATION_EXCHANGE = "com.github.omarcosdn.exchange.notification.v1.pubsub";
+  public static final String NOTIFICATION_V1_QUEUE = "com.github.omarcosdn.queue.notification.message";
 
   @Bean
   public FanoutExchange notificationExchange() {
